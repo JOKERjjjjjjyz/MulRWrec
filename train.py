@@ -1,7 +1,8 @@
 import numpy as np
 import random
 import math
-
+import multiprocessing
+from functools import partial
 def randomwalk(length,graph,start_node):
     current_node = start_node
     for step in range(length):
@@ -16,6 +17,30 @@ def randomwalk(length,graph,start_node):
         current_node = next_node
     radio = 1/length
     return current_node,radio
+
+def propagate_partial(user_range, k, graph, vector_origin, M, N, KsampleNum):
+    partial_vector = np.zeros((M + N, N))
+    for user in user_range:
+        for j in range(KsampleNum):
+            print("Training:Epoch", k, ", (user, j): (", user, ", ", j, ")")
+            targetNode, radio = randomwalk(k, graph, user)
+            partial_vector[targetNode] += radio * vector_origin[user] * 0.001
+    return partial_vector
+
+def propagate_parallel(k, graph, vector_origin, M, N, KsampleNum):
+    num_processes = 4
+    pool = multiprocessing.Pool(processes=num_processes)
+
+    user_ranges = np.array_split(range(M), num_processes)
+    partial_func = partial(
+        propagate_partial, k=k, graph=graph, vector_origin=vector_origin, M=M, N=N, KsampleNum=KsampleNum
+    )
+    results = pool.map(partial_func, user_ranges)
+    pool.close()
+    pool.join()
+
+    final_vector = sum(results)
+    return final_vector
 
 def propagate(k,graph,vector_origin,M,N,KsampleNum):
     user_list = [i for i in range(M)]
