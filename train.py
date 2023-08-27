@@ -27,8 +27,8 @@ def propagate_partial(user_range, k, graph, vector_origin, M, N, KsampleNum):
             partial_vector[targetNode] += radio * vector_origin[user] * 0.001
     return partial_vector
 
-def propagate_parallel(k, graph, vector_origin, M, N, KsampleNum):
-    num_processes = 4
+def propagate_parallel(k, graph, vector_origin, M, N, KsampleNum,core):
+    num_processes = core
     pool = multiprocessing.Pool(processes=num_processes)
 
     user_ranges = np.array_split(range(M), num_processes)
@@ -52,10 +52,11 @@ def propagate(k,graph,vector_origin,M,N,KsampleNum):
             vector[targetNode] += radio*vector_origin[user]*0.001
     return vector
 
-def Klayer_sampleNum(k,epsilon,delta,M,index):
+def Klayer_sampleNum(k,epsilon,delta,M,N,index):
     # return N: sample number for k
-    N = 1/(2*epsilon*epsilon)*math.log(2*M/delta)*M*math.pow(k,index)
-    return int(N)+1
+    # N = 1/(2*epsilon*epsilon)*math.log(2*M/delta)*M*math.pow(k,index)
+    number = (M+N)*math.pow(k,index)
+    return int(number)+1
 
 def topK(vector_origin,vector_propagate,M,N,k):
     recommendList = []

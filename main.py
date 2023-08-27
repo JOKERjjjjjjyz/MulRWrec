@@ -53,6 +53,8 @@ if __name__ == '__main__':
     N = dataset.m_items
     K_value = eval(world.topks)
     K = K_value[0]
+    core = int(world.CORES)
+    print(core)
     vector_propagate = [np.zeros((M + N, N)) for _ in range(K)]
     vector_propagate_sum = np.zeros((M + N, N))  # 创建用于存储总和的矩阵
     testarray = [[] for _ in range(M)]
@@ -60,8 +62,8 @@ if __name__ == '__main__':
         testarray[idx] = dataset.test[user]
     start_time = time.time()
     for i in range(1,K+1):
-        sampleNum = Klayer_sampleNum(i,0.025, 0.5, M,index)
-        vector_propagate[i-1] = propagate_parallel(i,graph,vector_origin,M,N,sampleNum)
+        sampleNum = Klayer_sampleNum(i,0.025, 0.5, M,N,index)
+        vector_propagate[i-1] = propagate_parallel(i,graph,vector_origin,M,N,sampleNum,core)
         filename = f"{world.dataset}_matrix_{i-1}.npy"  # 文件名类似于 matrix_0.npy, matrix_1.npy, ...
         np.save(filename, vector_propagate[i-1])
         vector_propagate_sum += vector_propagate[i-1]
